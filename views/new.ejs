@@ -1,0 +1,9 @@
+<%- include('partials/header') %>
+
+<h2>Новая задача</h2>
+<form action="/new" method="POST" class="row">
+  <input type="text" name="title" required placeholder="Например: позвонить клиенту" />
+  <button type="submit" class="btn">Добавить</button>
+</form>
+
+<%- include('partials/footer') %>

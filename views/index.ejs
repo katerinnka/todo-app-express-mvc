@@ -1,0 +1,22 @@
+<%- include('partials/header') %>
+
+<h2>Список задач</h2>
+
+<ul class="list">
+  <% if (todos.length === 0) { %>
+    <li class="muted">Задач пока нет. Добавь первую на странице «Новая».</li>
+  <% } %>
+  <% todos.forEach(t => { %>
+    <li class="item">
+      <form action="/<%= t.id %>/toggle" method="POST" class="inline">
+        <button class="btn small"><%= t.done ? '⟳' : '✓' %></button>
+      </form>
+      <span class="<%= t.done ? 'done' : '' %>"><%= t.title %></span>
+      <form action="/<%= t.id %>/delete" method="POST" class="inline" onsubmit="return confirm('Удалить задачу?');">
+        <button class="btn danger small">✕</button>
+      </form>
+    </li>
+  <% }) %>
+</ul>
+
+<%- include('partials/footer') %>
