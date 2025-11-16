@@ -31,3 +31,66 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
 );
+
+
+Регистрация пользователя
+{
+  "username": "testuser",
+  "email": "test@mail.com",
+  "password": "123456"
+}
+
+Вход пользователя
+
+{
+  "email": "test@mail.com",
+  "password": "123456"
+}
+
+Получение профиля
+Authorization: Bearer <JWT>
+
+{
+  "id": 1,
+  "username": "testuser",
+  "role": "user"
+}
+
+Защита маршрутов
+const jwt = require("jsonwebtoken");
+
+module.exports = (req, res, next) => {
+    try {
+        const header = req.headers.authorization;
+        if (!header) return res.status(401).json({ error: "Missing token" });
+
+        const token = header.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        req.user = decoded;
+        next();
+    } catch {
+        res.status(401).json({ error: "Invalid token" });
+    }
+};
+
+Контрольные вопросы
+1. Что такое JWT?
+
+JWT — это компактный токен, содержащий закодированные данные пользователя, подписанные секретным ключом.
+
+2. В чём отличие аутентификации и авторизации?
+
+Аутентификация - подтверждение личности (кто ты?)
+Авторизация - проверка прав (что тебе разрешено?)
+
+3. Зачем хэшировать пароли?
+
+Чтобы даже при утечке базы злоумышленник не получил реальные пароли.
+
+4. Какие преимущества у JWT?
+
+- лёгкий
+- хранится на клиенте
+- работает без сессий
+- подходит для микросервисов
