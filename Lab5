@@ -1,0 +1,173 @@
+## Лабораторная работа №5. Архитектурные стили и протоколы взаимодействия Web-API
+
+# Цель работы:
+- Освоить один из альтернативных архитектурных стилей Web-API, отличных от REST (GraphQL, WebSockets, WebHooks, SOAP и др.).
+- Научиться выбирать архитектурный стиль под конкретную задачу и аргументировать свой выбор.
+- Расширить функциональность существующего сервиса, интегрируя новый тип API вместе с уже реализованным REST API
+- Закрепить навыки проектирования и реализации backend-приложений на Node.js + Express в более «приближенном к продакшену» сценарии.
+
+Шаг 1. Анализ архитектурных стилей Web-API
+
+GraphQL — ключевые особенности
+Один endpoint вместо множества REST-маршрутов
+Клиент самостоятельно формирует структуру ответа
+Эффективно работает со сложными данными
+Уменьшает количество запросов
+
+WebSockets — ключевые особенности
+
+Двустороннее постоянное соединение между клиентом и сервером
+Идеально подходит для real-time взаимодействия
+Сервер может отправлять данные без запроса клиента
+Используется для чатов, мониторинга, уведомлений
+
+WebHooks — особенности
+
+Сервер отправляет запросы на внешние URL при наступлении события
+Подходит для интеграций (Stripe, GitHub, Slack)
+Клиент должен иметь публичный доступ для получения уведомлений
+
+SOAP — особенности
+
+Жёсткие контракты, XML-формат
+Используется в банковских и государственных системах
+Очень строгий и тяжёлый по сравнению с REST
+
+Шаг 2. Выбор архитектурного стиля API
+Выбранный стиль: WebSockets
+Причины выбора:
+
+REST не поддерживает real-time взаимодействие
+WebSockets позволяют передавать сообщения мгновенно
+Легко интегрируются в Express (через socket.io)
+Не требуют сложной конфигурации
+
+
+Какую задачу решают WebSockets:
+
+REST - запрос - ответ - завершение
+WebSocket - одно соединение - постоянная двусторонняя связь
+
+Шаг 3. Реализация WebSockets в приложении
+
+Установка socket.io
+npm install socket.io
+
+Шаг 4. Создание WebSocket-сервера (вместе с REST)
+app.js
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+// REST endpoint
+app.get("/api/hello", (req, res) => {
+  res.json({ message: "REST API is working" });
+});
+
+// WebSocket connection
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("chatMessage", (msg) => {
+    console.log("Received:", msg);
+    io.emit("chatMessage", msg); // Send to all clients
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+server.listen(3000, () => {
+  console.log("Server with WebSockets running on port 3000");
+});
+
+Шаг 5. Фронтенд-клиент для тестирования WebSocket (chat)
+
+Создай файл client.html в корне проекта:
+
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>WebSocket Chat</h1>
+
+  <input id="msgInput" placeholder="Message" />
+  <button onclick="send()">Send</button>
+
+  <ul id="messages"></ul>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const socket = io("http://localhost:3000");
+
+    socket.on("chatMessage", (msg) => {
+      const li = document.createElement("li");
+      li.innerText = msg;
+      document.getElementById("messages").appendChild(li);
+    });
+
+    function send() {
+      const msg = document.getElementById("msgInput").value;
+      socket.emit("chatMessage", msg);
+    }
+  </script>
+</body>
+</html>
+
+Тестирование
+
+Запускаем сервер:
+
+node app.js
+
+
+Контрольные вопросы: 
+
+1. Отличия REST от WebSockets
+REST	WebSockets
+Запрос - ответ	Постоянное соединение
+Однонаправленный	Двусторонний
+Нет real-time	Полный real-time
+Простая архитектура	Требует постоянного соединения
+
+2. Когда WebSockets лучше REST?
+
+чаты
+live-уведомления
+игры
+мониторинг в реальном времени
+онлайн-статусы
+
+3. Недостатки WebSockets
+
+сложнее масштабировать (нужны sticky sessions)
+постоянное соединение → нагрузка на сервер
+не подходит для простых запрос-ответ сценариев
+
+4. Как интегрирован WebSocket в приложение?
+
+Express остаётся REST-сервером
+поверх создаётся HTTP-server
+socket.io подключается к этому серверу
+добавлена логика real-time чата
+REST-маршруты продолжают работать без изменений
+
+Вывод
+
+В ходе лабораторной работы я изучила архитектурный стиль WebSockets, сравнила его с REST и другими Web-API, а также реализовала реальную функциональность обмена сообщениями.
+WebSockets оказались удобным инструментом для расширения возможностей REST-приложения.
+
+Структура проекта
+project/
+app.js
+client.html
+package.json
+node_modules/
+
+Источники
+
+Лекции и материалы курса
